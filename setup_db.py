@@ -87,20 +87,6 @@ try:
             with task_app.app_context():
                 task_db.create_all()
                 print("Task tables created!")
-                
-                # You can add sample tasks here if needed
-                # Example:
-                # sample_task = Task(
-                #     task_id='TASK1001',
-                #     project_type='website_development',
-                #     skills=['HTML', 'CSS', 'JavaScript'],
-                #     complexity='Medium',
-                #     priority='High',
-                #     status='unassigned'
-                # )
-                # task_db.session.add(sample_task)
-                # task_db.session.commit()
-                # print(f"Sample task created with ID: {sample_task.task_id}")
         
         print("Database setup completed successfully!")
 
