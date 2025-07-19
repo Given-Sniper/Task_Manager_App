@@ -22,9 +22,9 @@ PROJECT_TYPES = {
     "website_development": ["HTML", "CSS", "JavaScript", "React", "Vue", "Angular"],
     "mobile_app_development": ["Swift", "Kotlin", "React Native", "Flutter"],
     "machine_learning": ["Python", "TensorFlow", "PyTorch", "Scikit-learn"],
-    # Add other project types as needed
+    
 }
-# Add to main_app.py
+
 TASK_SERVICE_URL = os.environ.get('TASK_SERVICE_URL', 'http://localhost:5002/api')
 
 def assign_tasks(tasks):
@@ -66,7 +66,7 @@ def get_skills_for_project_type(project_type):
         print(f"Error fetching skills for project type: {str(e)}")
         return PROJECT_TYPES.get(project_type, [])
 
-# Add this function in your app.py or utils.py file
+
 def format_date(date_str, format_str='%b %d, %Y'):
     """Format a date string with the specified format"""
     if not date_str:
@@ -911,7 +911,6 @@ def update_metrics(emp_id):
     
     return jsonify({'success': True})
 
-# Add this endpoint to main_app.py - ensure it is placed before the 'if __name__ == '__main__':' line
 
 @app.route('/api/create_task', methods=['POST'])
 def create_task():
