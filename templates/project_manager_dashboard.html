@@ -313,28 +313,10 @@
                             </tr>
                         </thead>
                         <tbody id="submittedTasksTable">
-                            {% if pending_tasks %}
-                                {% for task in pending_tasks %}
-                                <tr class="border-b border-gray-700 hover:bg-gray-800">
-                                    <td class="py-3">{{ task.task_id }}</td>
-                                    <td class="py-3">{{ task.project_type }}</td>
-                                    <td class="py-3">{{ task.assigned_to_name }} ({{ task.assigned_to }})</td>
-                                    <td class="py-3">{{ task.submitted_at[:19] if task.submitted_at else 'N/A' }}</td>
-                                    <td class="py-3">
-                                        <button onclick="showApprovalModal('{{ task.task_id }}')" 
-                                                class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1 rounded text-sm">
-                                            <i class="fas fa-eye mr-1"></i> Review
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-gray-400">
-                                        No tasks submitted for approval
-                                    </td>
-                                </tr>
-                            {% endif %}
+                            <!-- Tasks will be loaded here dynamically -->
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-gray-400">Loading submitted tasks...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -472,17 +454,45 @@
                 <div class="dark-card rounded-lg shadow p-6">
                     <h3 class="text-lg font-bold mb-6">Frequently Asked Questions</h3>
                     
-                    {% for faq in faq_items %}
                     <div class="faq-item">
                         <button class="faq-question" onclick="toggleFAQ(this)">
-                            <span>{{ faq.question }}</span>
+                            <span>How do I create and assign a new task?</span>
                             <i class="fas fa-chevron-down faq-icon"></i>
                         </button>
                         <div class="faq-answer">
-                            {{ faq.answer }}
+                            Click on any project type card, fill in the task details, and click "Get Recommendation" to find the best developer for the task.
                         </div>
                     </div>
-                    {% endfor %}
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            <span>How do I review submitted tasks?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            Check the "Tasks Submitted for Approval" section and click the "Review" button to approve or reject tasks.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            <span>How do I view team performance?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            Check the stats cards at the top and the "Top Performers" section to see team metrics and individual performance.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            <span>What does the recommendation system consider?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            The system considers skill match, employee experience, past success rate, and current workload to recommend the best person for each task.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
