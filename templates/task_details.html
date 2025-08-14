@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Task Details - {{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-900 min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-white">Task Details</h1>
+            <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Task Information Card -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div>
+                    <h2 class="text-xl font-semibold text-white mb-4">{{ task.title }}</h2>
+                    
+                    <!-- Status Badge -->
+                    <div class="mb-4">
+                        {% if task.status == 'completed' %}
+                            <span class="px-3 py-1 bg-green-600 text-white rounded-full text-sm font-medium">
+                                <i class="fas fa-check-circle mr-1"></i>{{ task.status.title() }}
+                            </span>
+                        {% elif task.status == 'in_progress' %}
+                            <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium">
+                                <i class="fas fa-play-circle mr-1"></i>In Progress
+                            </span>
+                        {% elif task.status == 'submitted' %}
+                            <span class="px-3 py-1 bg-yellow-600 text-white rounded-full text-sm font-medium">
+                                <i class="fas fa-upload mr-1"></i>Submitted
+                            </span>
+                        {% else %}
+                            <span class="px-3 py-1 bg-gray-600 text-white rounded-full text-sm font-medium">
+                                <i class="fas fa-clock mr-1"></i>{{ task.status.title() }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium text-gray-300 mb-2">Description</h3>
+                        <p class="text-gray-400 leading-relaxed">{{ task.description }}</p>
+                    </div>
+
+                    <!-- Task Properties -->
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-400">Priority:</span>
+                            <span class="text-white ml-2 font-medium">{{ task.priority.title() if task.priority else 'N/A' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Complexity:</span>
+                            <span class="text-white ml-2 font-medium">{{ task.complexity.title() if task.complexity else 'N/A' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Project Type:</span>
+                            <span class="text-white ml-2 font-medium">{{ task.project_type.title() if task.project_type else 'N/A' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Est. Hours:</span>
+                            <span class="text-white ml-2 font-medium">{{ task.estimated_hours if task.estimated_hours else 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <!-- Assignment Info -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-300 mb-3">Assignment</h3>
+                        {% if assignee %}
+                            <div class="bg-gray-700 rounded-lg p-4">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-user text-blue-400 mr-2"></i>
+                                    <span class="text-white font-medium">{{ assignee.name }}</span>
+                                </div>
+                                <div class="text-gray-400 text-sm">
+                                    <div>ID: {{ assignee.emp_id }}</div>
+                                    <div>Role: {{ assignee.role.title() if assignee.role else 'N/A' }}</div>
+                                    <div>Experience: {{ assignee.experience }} years</div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="bg-gray-700 rounded-lg p-4 text-center">
+                                <i class="fas fa-user-slash text-gray-400 mb-2"></i>
+                                <p class="text-gray-400">Not assigned</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Specification Download -->
+                    {% if task.spec_zip_path %}
+                        <div class="mb-6">
+                            <h3 class="text-lg font-medium text-gray-300 mb-3">Specification</h3>
+                            <div class="bg-gray-700 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-white font-medium">{{ task.spec_original_name }}</div>
+                                        <div class="text-gray-400 text-sm">
+                                            Size: {{ "%.1f"|format(task.spec_size_bytes / 1024) }} KB
+                                        </div>
+                                    </div>
+                                    <a href="{{ url_for('download_task_spec', task_id=task.task_id) }}" 
+                                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                                        <i class="fas fa-download mr-2"></i>Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Dates -->
+                    <div class="text-sm">
+                        {% if task.deadline %}
+                            <div class="mb-2">
+                                <span class="text-gray-400">Deadline:</span>
+                                <span class="text-white ml-2">{{ task.deadline[:10] if task.deadline else 'N/A' }}</span>
+                            </div>
+                        {% endif %}
+                        {% if task.created_at %}
+                            <div class="mb-2">
+                                <span class="text-gray-400">Created:</span>
+                                <span class="text-white ml-2">{{ task.created_at[:10] if task.created_at else 'N/A' }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Submission Section -->
+        {% if not is_pm and is_assigned and task.status == 'in_progress' %}
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    <i class="fas fa-upload mr-2"></i>Submit Your Work
+                </h3>
+                
+                {% if submission %}
+                    <!-- Existing Submission -->
+                    <div class="bg-yellow-900 border border-yellow-600 rounded-lg p-4 mb-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-info-circle text-yellow-400 mr-2"></i>
+                            <span class="text-yellow-300 font-medium">Submission already exists</span>
+                        </div>
+                        <div class="text-yellow-200 text-sm">
+                            <div>File: {{ submission.submit_original_name }}</div>
+                            <div>Submitted: {{ submission.submitted_at[:16] if submission.submitted_at else 'N/A' }}</div>
+                            <div>Size: {{ "%.1f"|format(submission.submit_size_bytes / 1024) }} KB</div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Upload Form -->
+                <form action="{{ url_for('submit_task_with_file', task_id=task.task_id) }}" method="post" enctype="multipart/form-data" class="space-y-4">
+                    <div>
+                        <label for="submission_file" class="block text-gray-300 font-medium mb-2">
+                            {% if submission %}Replace Submission{% else %}Upload Submission{% endif %} (.zip files only)
+                        </label>
+                        <input type="file" 
+                               id="submission_file" 
+                               name="submission_file" 
+                               accept=".zip" 
+                               required
+                               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                    </div>
+                    
+                    <div>
+                        <label for="submission_notes" class="block text-gray-300 font-medium mb-2">Notes (Optional)</label>
+                        <textarea id="submission_notes" 
+                                  name="notes" 
+                                  rows="3" 
+                                  placeholder="Add any notes about your submission..."
+                                  class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">{{ submission.notes if submission else '' }}</textarea>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" 
+                                class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors">
+                            <i class="fas fa-upload mr-2"></i>
+                            {% if submission %}Replace Submission{% else %}Submit Work{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+
+        <!-- Project Manager Submission View -->
+        {% if is_pm and submission %}
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    <i class="fas fa-file-archive mr-2"></i>Developer Submission
+                </h3>
+                
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-gray-400">Submitted by:</span>
+                            <span class="text-white ml-2 font-medium">{{ submission.developer_id }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Submitted at:</span>
+                            <span class="text-white ml-2">{{ submission.submitted_at[:16] if submission.submitted_at else 'N/A' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">File name:</span>
+                            <span class="text-white ml-2">{{ submission.submit_original_name }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">File size:</span>
+                            <span class="text-white ml-2">{{ "%.1f"|format(submission.submit_size_bytes / 1024) }} KB</span>
+                        </div>
+                    </div>
+                    
+                    {% if submission.notes %}
+                        <div class="mb-4">
+                            <span class="text-gray-400">Notes:</span>
+                            <div class="text-white mt-1 p-3 bg-gray-600 rounded">{{ submission.notes }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="flex space-x-4">
+                        <a href="{{ url_for('download_task_submission', task_id=task.task_id) }}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                            <i class="fas fa-download mr-2"></i>Download Submission
+                        </a>
+                        
+                        <!-- Task Status Update Buttons -->
+                        {% if task.status != 'completed' %}
+                            <form action="{{ url_for('update_task_status') }}" method="post" class="inline">
+                                <input type="hidden" name="task_id" value="{{ task.task_id }}">
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" 
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                                    <i class="fas fa-check mr-2"></i>Mark as Completed
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% elif not is_pm and is_assigned %}
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>Task Submission
+                </h3>
+                <div class="bg-blue-900 border border-blue-600 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-info-circle text-blue-400 mr-2"></i>
+                        <span class="text-blue-300 font-medium">Submission not available</span>
+                    </div>
+                    <p class="text-blue-200 text-sm">
+                        Tasks can only be submitted when they are in 'In Progress' status. 
+                        Current status: <strong>{{ task.status.title() }}</strong>
+                        {% if task.status == 'assigned' %}
+                        <br><em>Start working on this task to enable submission.</em>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% elif is_pm %}
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    <i class="fas fa-file-archive mr-2"></i>Developer Submission
+                </h3>
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
+                    <p class="text-gray-400">No submission has been uploaded yet.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

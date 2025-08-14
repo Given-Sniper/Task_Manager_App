@@ -57,6 +57,67 @@
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
+        
+        .faq-section {
+            margin-top: 2rem;
+        }
+        
+        .faq-item {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            border-color: #6366f1;
+        }
+        
+        .faq-question {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        
+        .faq-question:hover {
+            background-color: #2a2a2a;
+        }
+        
+        .faq-icon {
+            font-size: 0.875rem;
+            color: #6366f1;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 1.5rem;
+            color: #888;
+            line-height: 1.6;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding: 0 1.5rem 1rem 1.5rem;
+        }
     </style>
 </head>
 <body class="bg-black">
@@ -252,10 +313,28 @@
                             </tr>
                         </thead>
                         <tbody id="submittedTasksTable">
-                            <!-- Tasks will be loaded here dynamically -->
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-gray-400">Loading submitted tasks...</td>
-                            </tr>
+                            {% if pending_tasks %}
+                                {% for task in pending_tasks %}
+                                <tr class="border-b border-gray-700 hover:bg-gray-800">
+                                    <td class="py-3">{{ task.task_id }}</td>
+                                    <td class="py-3">{{ task.project_type }}</td>
+                                    <td class="py-3">{{ task.assigned_to_name }} ({{ task.assigned_to }})</td>
+                                    <td class="py-3">{{ task.submitted_at[:19] if task.submitted_at else 'N/A' }}</td>
+                                    <td class="py-3">
+                                        <button onclick="showApprovalModal('{{ task.task_id }}')" 
+                                                class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1 rounded text-sm">
+                                            <i class="fas fa-eye mr-1"></i> Review
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-gray-400">
+                                        No tasks submitted for approval
+                                    </td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -385,6 +464,25 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <div class="dark-card rounded-lg shadow p-6">
+                    <h3 class="text-lg font-bold mb-6">Frequently Asked Questions</h3>
+                    
+                    {% for faq in faq_items %}
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            <span>{{ faq.question }}</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            {{ faq.answer }}
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -938,6 +1036,22 @@ function hideHistoryModal() {
     if (historyContainer) {
         historyContainer.style.display = 'none';
     }
+}
+
+// FAQ Toggle Function
+function toggleFAQ(button) {
+    const faqItem = button.parentElement;
+    const allFaqItems = document.querySelectorAll('.faq-item');
+    
+    // Close all other FAQ items
+    allFaqItems.forEach(item => {
+        if (item !== faqItem && item.classList.contains('active')) {
+            item.classList.remove('active');
+        }
+    });
+    
+    // Toggle current item
+    faqItem.classList.toggle('active');
 }
     </script>
 

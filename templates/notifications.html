@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Developer Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .dark-card {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+        .notification-item {
+            transition: all 0.2s ease;
+        }
+        .notification-item:hover {
+            background-color: #2a2a2a;
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-gray-800 text-white p-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold">
+                <i class="fas fa-bell mr-2"></i>Notifications
+            </h1>
+            <a href="{{ url_for('developer_dashboard') }}" class="text-blue-400 hover:text-blue-300">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Notifications Display -->
+        <div class="dark-card rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold">Recent Activity</h3>
+                <button onclick="markAllAsRead()" class="text-indigo-400 hover:text-indigo-300 text-sm">
+                    <i class="fas fa-check-double mr-1"></i>Mark all as read
+                </button>
+            </div>
+            
+            {% if notifications %}
+            <div class="space-y-3">
+                {% for notification in notifications %}
+                <div class="notification-item border border-gray-700 rounded-lg p-4 cursor-pointer">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 mt-1">
+                            {% if notification.type == 'task_assigned' %}
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-plus text-white text-xs"></i>
+                            </div>
+                            {% elif notification.type == 'task_started' %}
+                            <div class="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-play text-white text-xs"></i>
+                            </div>
+                            {% elif notification.type == 'task_completed' %}
+                            <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                            {% else %}
+                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-info text-white text-xs"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-1">
+                            <p class="text-white">{{ notification.message }}</p>
+                            {% if notification.task_id %}
+                            <p class="text-gray-400 text-sm">Task ID: {{ notification.task_id }}</p>
+                            {% endif %}
+                            {% if notification.timestamp %}
+                            <p class="text-gray-500 text-xs mt-1">{{ notification.timestamp[:19].replace('T', ' ') }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-shrink-0">
+                            {% if notification.task_id %}
+                            <a href="/my_tasks" class="text-indigo-400 hover:text-indigo-300 text-sm">
+                                View Task
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Load More Button -->
+            <div class="text-center mt-6">
+                <button onclick="loadMoreNotifications()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                    <i class="fas fa-chevron-down mr-2"></i>Load More
+                </button>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-12 text-gray-400">
+                <i class="fas fa-bell-slash text-6xl mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">No notifications yet</h3>
+                <p>You're all caught up! New task updates and activity will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div class="dark-card rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-blue-400">{{ notifications|selectattr('type', 'equalto', 'task_assigned')|list|length }}</div>
+                <div class="text-gray-400 text-sm">New Assignments</div>
+            </div>
+            <div class="dark-card rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-orange-400">{{ notifications|selectattr('type', 'equalto', 'task_started')|list|length }}</div>
+                <div class="text-gray-400 text-sm">Tasks Started</div>
+            </div>
+            <div class="dark-card rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-green-400">{{ notifications|selectattr('type', 'equalto', 'task_completed')|list|length }}</div>
+                <div class="text-gray-400 text-sm">Tasks Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function markAllAsRead() {
+            // TODO: Implement mark all as read functionality
+            alert('All notifications marked as read!');
+            
+            // Visual feedback - fade out notification indicators
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.style.opacity = '0.7';
+            });
+        }
+
+        function loadMoreNotifications() {
+            // TODO: Implement pagination for notifications
+            alert('Loading more notifications... (Feature to be implemented)');
+        }
+    </script>
+</body>
+</html>

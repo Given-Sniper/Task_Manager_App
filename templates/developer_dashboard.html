@@ -94,6 +94,67 @@
             stroke-dashoffset: 283;
             transition: stroke-dashoffset 0.5s ease;
         }
+        
+        .faq-section {
+            margin-top: 2rem;
+        }
+        
+        .faq-item {
+            background-color: var(--card-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:hover {
+            border-color: var(--indigo-light);
+        }
+        
+        .faq-question {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        
+        .faq-question:hover {
+            background-color: #2a2a2a;
+        }
+        
+        .faq-icon {
+            font-size: 0.875rem;
+            color: var(--indigo-light);
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding: 0 1.5rem 1rem 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -152,7 +213,9 @@
                     <a href="/notifications" class="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
                         <i class="fas fa-bell w-5 text-center"></i>
                         <span>Notifications</span>
-                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                        {% if notification_count > 0 %}
+                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ notification_count }}</span>
+                        {% endif %}
                     </a>
                 </li>
                 <li>
@@ -162,18 +225,6 @@
                     </a>
                 </li>
             </ul>
-            
-            <div class="mt-8 pt-4 border-t border-gray-700">
-                <h3 class="text-xs uppercase text-gray-400 mb-3 font-bold">Quick Actions</h3>
-                <button onclick="showTaskReportModal()" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors text-left">
-                    <i class="fas fa-file-alt w-5 text-center"></i>
-                    <span>Submit Report</span>
-                </button>
-                <button onclick="showTimeOffModal()" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors text-left mt-2">
-                    <i class="fas fa-umbrella-beach w-5 text-center"></i>
-                    <span>Request Time Off</span>
-                </button>
-            </div>
         </div>
 
         <!-- Main Content Area -->
@@ -258,8 +309,7 @@
                     <div class="flex justify-between">
                         <div>
                             <p class="text-gray-400 text-sm font-medium">Experience</p>
-                            <h3 class="text-3xl font-bold mt-1">{{ employee.experience }}</h3>
-                            <p class="text-xs mt-2 text-gray-400">years with company</p>
+                            <h3 class="text-3xl font-bold mt-1">{{ employee.experience }} years</h3>
                         </div>
                         <div class="w-16 h-16 bg-yellow-900 rounded-full flex items-center justify-center">
                             <i class="fas fa-star text-yellow-400 text-2xl"></i>
@@ -352,6 +402,27 @@
                 <!-- Task Description -->
                 <p class="text-sm text-gray-400 mb-3 line-clamp-2">{{ task.description }}</p>
                 
+                <!-- Specification Download -->
+                <div class="mb-3 pb-2 border-b border-gray-700">
+                    {% if task.has_spec_file %}
+                        <a href="{{ url_for('download_task_spec', task_id=task.task_id) }}" 
+                           class="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm">
+                            <i class="fas fa-download mr-2"></i>
+                            Download spec (.zip)
+                            {% if task.spec_size_bytes %}
+                                <span class="ml-2 text-xs text-gray-500">
+                                    ({{ (task.spec_size_bytes / 1024) | round(1) }} KB)
+                                </span>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <span class="text-gray-500 text-sm">
+                            <i class="fas fa-file-archive mr-2"></i>
+                            No spec uploaded
+                        </span>
+                    {% endif %}
+                </div>
+                
                 <!-- Footer with Actions -->
                 <div class="flex justify-between items-center text-sm">
                     <div>
@@ -368,11 +439,6 @@
                                 class="bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs transition-colors">
                             Start Task
                         </button>
-                        
-                        <a href="/task/{{ task.task_id }}" 
-                           class="text-indigo-400 hover:text-indigo-300 text-xs border border-indigo-400 px-2 py-1 rounded">
-                            Details
-                        </a>
                     </div>
                 </div>
             </div>
@@ -426,28 +492,62 @@
                 <!-- Task Description -->
                 <p class="text-sm text-gray-400 mb-3 line-clamp-2">{{ task.description }}</p>
                 
-                <!-- Footer with Actions -->
-                <div class="flex justify-between items-center text-sm">
-                    <div>
-                        <span class="text-gray-400">Due:</span>
-                        <span class="ml-1 {{ 'text-red-400' if task.is_overdue else '' }}">
-                            {{ format_date(task.due_date) }}
-                            {% if task.is_overdue %}
-                            <span class="text-xs ml-1">(overdue)</span>
+                <!-- Specification Download -->
+                <div class="mb-3 pb-2 border-b border-gray-700">
+                    {% if task.has_spec_file %}
+                        <a href="{{ url_for('download_task_spec', task_id=task.task_id) }}" 
+                           class="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm">
+                            <i class="fas fa-download mr-2"></i>
+                            Download spec (.zip)
+                            {% if task.spec_size_bytes %}
+                                <span class="ml-2 text-xs text-gray-500">
+                                    ({{ (task.spec_size_bytes / 1024) | round(1) }} KB)
+                                </span>
                             {% endif %}
-                        </span>
-                    </div>
-                    <div class="space-x-2">
-                        <button onclick="submitForApproval('{{ task.task_id }}')" 
-                                class="bg-purple-700 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors">
-                            Submit
-                        </button>
-                        
-                        <a href="/task/{{ task.task_id }}" 
-                           class="text-indigo-400 hover:text-indigo-300 text-xs border border-indigo-400 px-2 py-1 rounded">
-                            Details
                         </a>
-                    </div>
+                    {% else %}
+                        <span class="text-gray-500 text-sm">
+                            <i class="fas fa-file-archive mr-2"></i>
+                            No spec uploaded
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <!-- File Upload Section -->
+                <div class="mb-4 p-3 bg-gray-700 rounded border">
+                    <h5 class="text-sm font-medium text-white mb-2">
+                        <i class="fas fa-upload mr-2"></i>Submit Your Work
+                    </h5>
+                    <form action="{{ url_for('submit_task_with_file', task_id=task.task_id) }}" method="post" enctype="multipart/form-data" class="space-y-2">
+                        <div>
+                            <input type="file" 
+                                   name="submission_file" 
+                                   accept=".zip" 
+                                   required
+                                   class="w-full text-xs bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                        </div>
+                        <div>
+                            <textarea name="notes" 
+                                      rows="2" 
+                                      placeholder="Add notes about your submission (optional)..."
+                                      class="w-full text-xs bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white placeholder-gray-400"></textarea>
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-green-700 hover:bg-green-600 text-white px-3 py-2 rounded text-xs transition-colors">
+                            <i class="fas fa-paper-plane mr-1"></i>Submit Task with File
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Footer with Due Date -->
+                <div class="text-sm text-center">
+                    <span class="text-gray-400">Due:</span>
+                    <span class="ml-1 {{ 'text-red-400' if task.is_overdue else '' }}">
+                        {{ format_date(task.due_date) }}
+                        {% if task.is_overdue %}
+                        <span class="text-xs ml-1">(overdue)</span>
+                        {% endif %}
+                    </span>
                 </div>
             </div>
             {% endfor %}
@@ -502,6 +602,27 @@
                 
                 <!-- Task Description -->
                 <p class="text-sm text-gray-400 mb-3 line-clamp-2">{{ task.description }}</p>
+                
+                <!-- Specification Download -->
+                <div class="mb-3 pb-2 border-b border-gray-700">
+                    {% if task.has_spec_file %}
+                        <a href="{{ url_for('download_task_spec', task_id=task.task_id) }}" 
+                           class="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm">
+                            <i class="fas fa-download mr-2"></i>
+                            Download spec (.zip)
+                            {% if task.spec_size_bytes %}
+                                <span class="ml-2 text-xs text-gray-500">
+                                    ({{ (task.spec_size_bytes / 1024) | round(1) }} KB)
+                                </span>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <span class="text-gray-500 text-sm">
+                            <i class="fas fa-file-archive mr-2"></i>
+                            No spec uploaded
+                        </span>
+                    {% endif %}
+                </div>
                 
                 <!-- Footer with Actions -->
                 <div class="flex justify-between items-center text-sm">
@@ -587,6 +708,25 @@
                             </div>
                         {% endif %}
                     </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <div class="dark-card p-6">
+                    <h3 class="text-lg font-bold mb-6">Frequently Asked Questions</h3>
+                    
+                    {% for faq in faq_items %}
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFAQ(this)">
+                            <span>{{ faq.question }}</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            {{ faq.answer }}
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -783,13 +923,56 @@ async function submitForApproval(task_id) {
     }
 }
         
-        // Modal Functions (placeholder implementations)
-        function showTaskReportModal() {
-            alert('Task report modal would appear here');
+        // Skills Modal Functions
+        function toggleSkillsModal() {
+            alert('Skills management feature coming soon! For now, contact your administrator to update your skills profile.');
         }
         
-        function showTimeOffModal() {
-            alert('Time off request modal would appear here');
+        // Task Action Functions
+        function updateTaskStatus(taskId, newStatus) {
+            if (!confirm(`Are you sure you want to change task ${taskId} to ${newStatus}?`)) {
+                return;
+            }
+            
+            fetch('/update_task_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Task ${taskId} status updated to ${newStatus}`);
+                    location.reload(); // Reload to show updated data
+                } else {
+                    alert(`Failed to update task: ${data.error || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the task');
+            });
+        }
+        
+        // FAQ Toggle Function
+        function toggleFAQ(button) {
+            const faqItem = button.parentElement;
+            const allFaqItems = document.querySelectorAll('.faq-item');
+            
+            // Close all other FAQ items
+            allFaqItems.forEach(item => {
+                if (item !== faqItem && item.classList.contains('active')) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Toggle current item
+            faqItem.classList.toggle('active');
         }
     </script>
 </body>

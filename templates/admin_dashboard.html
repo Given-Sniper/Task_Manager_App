@@ -159,10 +159,6 @@
       cursor: pointer;
     }
     
-    .edit-btn {
-      background-color: #0d6efd;
-      color: white;
-    }
     
     .delete-btn {
       background-color: #dc3545;
@@ -350,6 +346,67 @@
       cursor: pointer;
       height: 38px;
     }
+    
+    .faq-section {
+      margin-top: 2rem;
+    }
+    
+    .faq-item {
+      background-color: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .faq-item:hover {
+      border-color: #0d6efd;
+    }
+    
+    .faq-question {
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+    
+    .faq-question:hover {
+      background-color: #2a2a2a;
+    }
+    
+    .faq-icon {
+      font-size: 0.875rem;
+      color: #0d6efd;
+      transition: transform 0.3s ease;
+    }
+    
+    .faq-item.active .faq-icon {
+      transform: rotate(180deg);
+    }
+    
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 1.5rem;
+      color: #aaa;
+      line-height: 1.6;
+    }
+    
+    .faq-item.active .faq-answer {
+      max-height: 200px;
+      padding: 0 1.5rem 1rem 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -490,9 +547,6 @@
             </td>
             <td>
               <div class="action-buttons">
-                <a href="{{ url_for('edit_employee', emp_id=employee.emp_id) }}">
-                  <button class="action-btn edit-btn">Edit</button>
-                </a>
                 <button class="action-btn metrics-btn" onclick="openMetricsModal('{{ employee.emp_id }}', {{ employee.tasks_completed or 0 }}, {{ employee.success_rate or 0 }})">Metrics</button>
                 {% if employee.emp_id != current_user.emp_id %}
                 <form action="{{ url_for('admin_delete_employee', emp_id=employee.emp_id) }}" method="post" style="display:inline;">
@@ -505,6 +559,27 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <div class="employees-table">
+        <h3 style="color: white; margin-bottom: 1.5rem; padding: 1.5rem; font-size: 1.125rem; font-weight: bold;">Frequently Asked Questions</h3>
+        
+        <div style="padding: 0 1.5rem 1.5rem;">
+          {% for faq in faq_items %}
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              <span>{{ faq.question }}</span>
+              <i class="fas fa-chevron-down faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              {{ faq.answer }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 
@@ -651,6 +726,22 @@
       rows.forEach(row => {
         row.style.display = '';
       });
+    }
+    
+    // FAQ Toggle Function
+    function toggleFAQ(button) {
+      const faqItem = button.parentElement;
+      const allFaqItems = document.querySelectorAll('.faq-item');
+      
+      // Close all other FAQ items
+      allFaqItems.forEach(item => {
+        if (item !== faqItem && item.classList.contains('active')) {
+          item.classList.remove('active');
+        }
+      });
+      
+      // Toggle current item
+      faqItem.classList.toggle('active');
     }
   </script>
 </body>

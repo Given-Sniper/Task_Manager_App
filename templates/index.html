@@ -97,6 +97,16 @@
     .button:hover {
         background-color: #005bb5;
     }
+
+    .admin-button {
+        background-color: #007acc !important;
+        border: 2px solid #005bb5;
+    }
+
+    .admin-button:hover {
+        background-color: #005bb5 !important;
+        box-shadow: 0 4px 8px rgba(0, 122, 204, 0.3);
+    }
     .footer{
         background-color: black;
     }
@@ -137,12 +147,9 @@
         <div class="button-container">
             <a href="{{ url_for('select_role', role='developer') }}" class="button">Developer</a>
             <a href="{{ url_for('select_role', role='project_manager') }}" class="button">Project Manager</a>
-            <a href="{{ url_for('select_role', role='human_resource') }}" class="button">Human Resource</a>
+            <a href="{{ url_for('admin_login_page') }}" class="button admin-button">Admin</a>
         </div>
 
-    </div>
-    <div class="footer">
-        <small><a href="{{ url_for('admin_login_page') }}">Admin Access</a></small>
     </div>
   
     

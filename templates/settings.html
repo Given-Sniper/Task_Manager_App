@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Developer Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .dark-card {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+        .dark-input {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+        .dark-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .skill-tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #1e3a8a;
+            color: #93c5fd;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+        .skill-tag .remove-skill {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: #bfdbfe;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-gray-800 text-white p-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold">
+                <i class="fas fa-cog mr-2"></i>Settings
+            </h1>
+            <a href="{{ url_for('developer_dashboard') }}" class="text-blue-400 hover:text-blue-300">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Profile Settings -->
+        <div class="dark-card rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">
+                <i class="fas fa-user mr-2"></i>Profile Information
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Employee ID</label>
+                    <input type="text" value="{{ employee.emp_id }}" class="dark-input w-full py-2 px-3 rounded" disabled>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Full Name</label>
+                    <input type="text" value="{{ employee.name }}" class="dark-input w-full py-2 px-3 rounded" disabled>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Email</label>
+                    <input type="email" value="{{ employee.email }}" class="dark-input w-full py-2 px-3 rounded" disabled>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Role</label>
+                    <input type="text" value="{{ employee.role.title() }}" class="dark-input w-full py-2 px-3 rounded" disabled>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Experience (Years)</label>
+                    <input type="number" value="{{ employee.experience or 0 }}" class="dark-input w-full py-2 px-3 rounded" disabled>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Success Rate</label>
+                    <input type="text" value="{{ '%.1f'|format(employee.success_rate or 0) }}%" class="dark-input w-full py-2 px-3 rounded" disabled>
+                </div>
+            </div>
+            
+            <p class="text-gray-400 text-sm mt-4">
+                <i class="fas fa-info-circle mr-1"></i>
+                Profile information is managed by system administrators. Contact HR for changes.
+            </p>
+        </div>
+
+        <!-- Skills Management -->
+        <div class="dark-card rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">
+                <i class="fas fa-code mr-2"></i>Skills & Expertise
+            </h3>
+            
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Current Skills</label>
+                <div class="min-h-20 p-3 border border-gray-700 rounded bg-gray-800">
+                    {% if employee.skills %}
+                        {% for skill in employee.skills %}
+                        <span class="skill-tag">
+                            {{ skill }}
+                            <span class="remove-skill" onclick="removeSkill('{{ skill }}')">&times;</span>
+                        </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-gray-400 italic">No skills added yet</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <input type="text" id="newSkill" placeholder="Add a new skill (e.g., Python, React, etc.)" class="dark-input flex-1 py-2 px-3 rounded">
+                <button onclick="addSkill()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-plus mr-1"></i>Add Skill
+                </button>
+            </div>
+        </div>
+
+        <!-- Password Settings -->
+        <div class="dark-card rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">
+                <i class="fas fa-key mr-2"></i>Password & Security
+            </h3>
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <h4 class="font-medium">Change Password</h4>
+                    <p class="text-gray-400 text-sm">Update your account password for better security</p>
+                </div>
+                <a href="/change_password" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-key mr-2"></i>Change Password
+                </a>
+            </div>
+        </div>
+
+        <!-- Account Statistics -->
+        <div class="dark-card rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4">
+                <i class="fas fa-chart-bar mr-2"></i>Account Statistics
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-400">{{ employee.tasks_completed or 0 }}</div>
+                    <div class="text-gray-400 text-sm">Tasks Completed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-400">{{ '%.1f'|format(employee.success_rate or 0) }}%</div>
+                    <div class="text-gray-400 text-sm">Success Rate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-400">{{ employee.experience or 0 }}</div>
+                    <div class="text-gray-400 text-sm">Years Experience</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function addSkill() {
+            const skillInput = document.getElementById('newSkill');
+            const skill = skillInput.value.trim();
+            
+            if (!skill) {
+                alert('Please enter a skill name');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/add_skill', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ skill: skill })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload(); // Refresh to show the new skill
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error adding skill:', error);
+                alert('An error occurred while adding the skill');
+            }
+            
+            skillInput.value = '';
+        }
+
+        async function removeSkill(skill) {
+            if (!confirm(`Are you sure you want to remove "${skill}" from your skills?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/remove_skill', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ skill: skill })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload(); // Refresh to update the skills list
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error removing skill:', error);
+                alert('An error occurred while removing the skill');
+            }
+        }
+
+        // Allow Enter key to add skill
+        document.getElementById('newSkill').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addSkill();
+            }
+        });
+    </script>
+</body>
+</html>

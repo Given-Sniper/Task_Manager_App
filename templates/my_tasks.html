@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tasks - Developer Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .dark-card {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .status-assigned { background-color: #3b82f6; color: white; }
+        .status-in_progress { background-color: #f59e0b; color: black; }
+        .status-submitted { background-color: #8b5cf6; color: white; }
+        .status-completed { background-color: #10b981; color: white; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-gray-800 text-white p-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold">My Tasks</h1>
+            <a href="{{ url_for('developer_dashboard') }}" class="text-blue-400 hover:text-blue-300">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Filter Section -->
+        <div class="dark-card rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4">Filter Tasks</h3>
+            <div class="flex flex-wrap gap-3">
+                <a href="/my_tasks?status=all" class="px-4 py-2 rounded {{ 'bg-indigo-600' if status_filter == 'all' else 'bg-gray-700 hover:bg-gray-600' }}">
+                    All Tasks
+                </a>
+                <a href="/my_tasks?status=assigned" class="px-4 py-2 rounded {{ 'bg-indigo-600' if status_filter == 'assigned' else 'bg-gray-700 hover:bg-gray-600' }}">
+                    Assigned
+                </a>
+                <a href="/my_tasks?status=in_progress" class="px-4 py-2 rounded {{ 'bg-indigo-600' if status_filter == 'in_progress' else 'bg-gray-700 hover:bg-gray-600' }}">
+                    In Progress
+                </a>
+                <a href="/my_tasks?status=submitted" class="px-4 py-2 rounded {{ 'bg-indigo-600' if status_filter == 'submitted' else 'bg-gray-700 hover:bg-gray-600' }}">
+                    Submitted
+                </a>
+                <a href="/my_tasks?status=completed" class="px-4 py-2 rounded {{ 'bg-indigo-600' if status_filter == 'completed' else 'bg-gray-700 hover:bg-gray-600' }}">
+                    Completed
+                </a>
+            </div>
+        </div>
+
+        <!-- Tasks Display -->
+        <div class="dark-card rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">
+                    {% if status_filter == 'all' %}
+                    All My Tasks ({{ tasks|length }})
+                    {% else %}
+                    {{ status_filter.replace('_', ' ').title() }} Tasks ({{ tasks|length }})
+                    {% endif %}
+                </h3>
+            </div>
+            
+            {% if tasks %}
+            <div class="space-y-4">
+                {% for task in tasks %}
+                <div class="border border-gray-700 rounded-lg p-4 hover:bg-gray-800 transition-colors">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-bold text-lg">{{ task.title }}</h4>
+                            <p class="text-gray-400 text-sm">{{ task.task_id }} • {{ task.project_type.replace('_', ' ').title() }}</p>
+                        </div>
+                        <span class="status-badge status-{{ task.status }}">
+                            {{ task.status.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    
+                    {% if task.description %}
+                    <p class="text-gray-300 mb-3">{{ task.description }}</p>
+                    {% endif %}
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                        <div>
+                            <span class="text-xs text-gray-400 uppercase">Priority</span>
+                            <p class="font-medium">{{ task.priority }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 uppercase">Complexity</span>
+                            <p class="font-medium">{{ task.complexity }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 uppercase">Assigned</span>
+                            <p class="font-medium">{{ task.assigned_at[:10] if task.assigned_at else 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 uppercase">Due Date</span>
+                            <p class="font-medium">{{ task.due_date[:10] if task.due_date else 'N/A' }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-2">
+                        {% if task.status == 'assigned' %}
+                        <button onclick="startTask('{{ task.task_id }}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-play mr-1"></i>Start Task
+                        </button>
+                        {% elif task.status == 'in_progress' %}
+                        <button onclick="submitTask('{{ task.task_id }}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-check mr-1"></i>Submit for Review
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-tasks text-4xl mb-4"></i>
+                <p>
+                    {% if status_filter == 'all' %}
+                    No tasks assigned to you yet.
+                    {% else %}
+                    No {{ status_filter.replace('_', ' ') }} tasks found.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        async function startTask(taskId) {
+            try {
+                const response = await fetch(`/api/start_task/${taskId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Task started successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error starting task:', error);
+                alert('An error occurred while starting the task');
+            }
+        }
+
+        async function submitTask(taskId) {
+            if (!confirm('Are you sure you want to submit this task for review?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/submit_task_for_review', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ task_id: taskId })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Task submitted for review successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error submitting task:', error);
+                alert('An error occurred while submitting the task');
+            }
+        }
+    </script>
+</body>
+</html>

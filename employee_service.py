@@ -1,5 +1,11 @@
 # employee_service.py
-from email_services import send_credentials_email
+# Import email service with fallback
+try:
+    from email_services import send_credentials_email
+except ImportError:
+    def send_credentials_email(email, emp_id, temp_password):
+        print(f"Email service not available. Credentials for {emp_id}: {temp_password}")
+        return True
 from flask import Flask, request, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,12 +20,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Database configuration
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/employee_db')
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+# Database configuration - use SQLite like main.py
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///task_manager.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_for_api')
 
@@ -41,8 +43,8 @@ class Employee(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime, nullable=True)
     
-    # Added fields referenced in main_app.py
-    skills = db.Column(db.ARRAY(db.String(50)), default=[])
+    # Added fields referenced in main_app.py - using JSON for SQLite compatibility
+    skills = db.Column(db.JSON, default=list)
     experience = db.Column(db.Integer, default=0)
     tasks_completed = db.Column(db.Integer, default=0)
     success_rate = db.Column(db.Float, default=0.0)
